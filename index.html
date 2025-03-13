@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 AI Chat</title>
+    <title>AI Chat with ChatGPT</title>
     <style>
         body {
             background: linear-gradient(270deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
@@ -11,6 +11,11 @@
             animation: GradientBackground 10s ease infinite;
             font-family: 'Arial', sans-serif;
             color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
 
         @keyframes GradientBackground {
@@ -20,8 +25,7 @@
         }
 
         .container {
-            max-width: 600px;
-            margin: 50px auto;
+            width: 600px;
             padding: 20px;
             background-color: #fff;
             border-radius: 8px;
@@ -45,7 +49,7 @@
         }
 
         input {
-            width: 80%;
+            width: 75%;
             padding: 10px;
             margin-top: 10px;
             border: 1px solid #ccc;
@@ -70,15 +74,17 @@
 <body>
 
     <div class="container">
-        <h1>ESP32 AI Chat</h1>
+        <h1>Chat with ChatGPT</h1>
         <div id="chatbox">
-            <p><strong>ESP32:</strong> Hello! Ask me anything.</p>
+            <p><strong>AI:</strong> Hello! Ask me anything.</p>
         </div>
         <input type="text" id="prompt" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
         <button onclick="sendPrompt()">Send</button>
     </div>
 
     <script>
+        const apiKey = "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"; // ⚠ Replace with your API key
+
         function sendPrompt() {
             let prompt = document.getElementById("prompt").value;
             if (!prompt) return;
@@ -89,15 +95,44 @@
             // Clear input field
             document.getElementById("prompt").value = "";
 
-            fetch(`/prompt?prompt=` + encodeURIComponent(prompt))
-            .then(response => response.text())
+            fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4",
+                    messages: [{ role: "user", content: prompt }]
+                })
+            })
+            .then(response => response.json())
             .then(data => {
-                chatbox.innerHTML += `<p><strong>ESP32:</strong> ${data}</p>`;
-                chatbox.scrollTop = chatbox.scrollHeight;  // Auto-scroll to bottom
+                let aiResponse = data.choices[0].message.content;
+                typeResponse(aiResponse);
             })
             .catch(error => {
-                chatbox.innerHTML += `<p><strong>ESP32:</strong> Error: ${error}</p>`;
+                chatbox.innerHTML += `<p><strong>AI:</strong> Error: ${error}</p>`;
             });
+        }
+
+        function typeResponse(text) {
+            let chatbox = document.getElementById("chatbox");
+            let newParagraph = document.createElement("p");
+            newParagraph.innerHTML = "<strong>AI:</strong> ";
+            chatbox.appendChild(newParagraph);
+
+            let i = 0;
+            function typeChar() {
+                if (i < text.length) {
+                    newParagraph.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typeChar, 20);
+                } else {
+                    chatbox.scrollTop = chatbox.scrollHeight;  // Auto-scroll
+                }
+            }
+            typeChar();
         }
 
         function handleKeyPress(event) {
