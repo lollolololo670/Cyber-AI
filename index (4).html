@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 AI Chat</title>
+    <style>
+        body {
+            background: linear-gradient(270deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+            background-size: 400% 400%;
+            animation: GradientBackground 10s ease infinite;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        @keyframes GradientBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #555;
+        }
+
+        #chatbox {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            overflow-y: auto;
+            text-align: left;
+            background: #f9f9f9;
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ESP32 AI Chat</h1>
+        <div id="chatbox">
+            <p><strong>ESP32:</strong> Hello! Ask me anything.</p>
+        </div>
+        <input type="text" id="prompt" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendPrompt()">Send</button>
+    </div>
+
+    <script>
+        function sendPrompt() {
+            let prompt = document.getElementById("prompt").value;
+            if (!prompt) return;
+
+            let chatbox = document.getElementById("chatbox");
+            chatbox.innerHTML += `<p><strong>You:</strong> ${prompt}</p>`;
+
+            // Clear input field
+            document.getElementById("prompt").value = "";
+
+            fetch(`/prompt?prompt=` + encodeURIComponent(prompt))
+            .then(response => response.text())
+            .then(data => {
+                chatbox.innerHTML += `<p><strong>ESP32:</strong> ${data}</p>`;
+                chatbox.scrollTop = chatbox.scrollHeight;  // Auto-scroll to bottom
+            })
+            .catch(error => {
+                chatbox.innerHTML += `<p><strong>ESP32:</strong> Error: ${error}</p>`;
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendPrompt();
+            }
+        }
+    </script>
+
+</body>
+</html>
